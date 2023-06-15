@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+### vars
+## ssh auth
+_user="${_user:=NULL}"
+_password="${_password:=NULL}"
+##_host="${_host:=NULL}"
+##
+_ipList="${_ipList:=NULL}"
+_logF="${_logF:=NULL}"
+## timeout, sec
+_timeout=60
+
+
+###
+[[ ${_ipList} == "NULL" || ${_user} == "NULL" || ${_password} == "NULL" || ${_logF} == "NULL" ]] && {
+  printf "/usage/ <_ipList='ip list file'> <_user='user'> <_password='password'> <_logF='log file'> `basename ${0}` ..\n"
+  exit 1
+  }
+
+##
+for _host in `cat ${_ipList}`; do
+  ##
+  printf "/i/ checking ${_user}@${_host} w/ password '${_password}' ..\n" | tee -a ${_logF}
+  sshpass -p${_password} ssh -o StrictHostKeyChecking=no ${_user}@${_host} "id; hostname" | tee -a ${_logF}
+  
+  ##
+  i=0
+  printf "/i/ waiting ${_timeout}s ..\n"
+  while [[ ${i} -lt ${_timeout} ]]; do
+    printf "${i} "
+    sleep 1
+    i=`expr ${i} + 1`
+    done
+  printf "\n"
+done
